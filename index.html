@@ -940,7 +940,14 @@
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="tema8" value="Arte/Cultura" onchange="updatePreview()">
                                         <label for="tema8">Arte/Cultura</label>
-                                    <<div class="checkbox-item">
+                                    <<div class="checkbox-item"><div class="checkbox-item">
+                                        <input type="checkbox" id="tema9" value="Otro" onchange="toggleOtroFortaleza(); updatePreview()">
+                                        <label for="tema9">Otro</label>
+                                    
+                                        <div class="form-group" id="otroFortalezaGroup" style="display: none; margin-top: 15px;">
+                                    <label>Especificá cuál:</label>
+                                    <input type="text" id="otroFortaleza" placeholder="Ej: Minería, Construcción..." oninput="updatePreview()">
+                                </div>
                                         <input type="checkbox" id="tema9" value="Otro" onchange="toggleOtroFortaleza(); updatePreview()">
                                         <label for="tema9">Otro</label>
                                     </div>
@@ -1013,7 +1020,7 @@
                     </form>
 
                     <div class="button-group">
-                        <button type="button" class="btn btn-secondary" id="btnPrev" onclick="prevStep()" style="display: none;">← Anterior</button>
+                        <button type="button" class="btn btn-secondary" id="btnPrev" onclick="prevStep()" style="display: none;">← Anterior</button><button type="button" class="btn btn-secondary" onclick="guardarBorrador()" style="background: #ffa726; color: white;">💾 Guardar Borrador</button>
                         <button type="button" class="btn btn-secondary" onclick="guardarBorrador()" style="background: #ffa726; color: white;">💾 Guardar Borrador</button>
                         <button type="button" class="btn btn-primary" id="btnNext" onclick="nextStep()">Siguiente →</button>
                         <button type="button" class="btn btn-primary" id="btnFinish" onclick="finishForm()" style="display: none;">¡Listo! Enviar mi ficha 🎉</button>
@@ -1648,6 +1655,117 @@
         // ====================================
         // INICIALIZACIÓN
         // ====================================
+        updateProgress();
+        updateButtons();
+   // FUNCIÓN TOGGLE OTRO FORTALEZA
+        function toggleOtroFortaleza() {
+            const checkbox = document.getElementById('tema9');
+            const group = document.getElementById('otroFortalezaGroup');
+            
+            if (checkbox && group) {
+                if (checkbox.checked) {
+                    group.style.display = 'block';
+                } else {
+                    group.style.display = 'none';
+                    document.getElementById('otroFortaleza').value = '';
+                }
+            }
+        }
+
+        // FUNCIÓN OBTENER FORTALEZAS
+        function obtenerFortalezas() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let fortalezas = [];
+            
+            checkboxes.forEach(cb => {
+                if (cb.id === 'tema9') {
+                    const otroTexto = document.getElementById('otroFortaleza').value;
+                    if (otroTexto) {
+                        fortalezas.push('Otro: ' + otroTexto);
+                    } else {
+                        fortalezas.push('Otro');
+                    }
+                } else {
+                    fortalezas.push(cb.value);
+                }
+            });
+            
+            return fortalezas.join(', ');
+        }
+
+        // GUARDAR BORRADOR
+        async function guardarBorrador() {
+            const destino = document.getElementById('nombreDestino').value;
+            
+            if (!destino) {
+                alert('Por favor ingresá al menos el nombre del destino antes de guardar');
+                return;
+            }
+            
+            if (!confirm('¿Guardar borrador de ' + destino + '?')) {
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const formData = {
+                    timestamp: new Date().toISOString(),
+                    nombreDestino: document.getElementById('nombreDestino').value,
+                    provincia: document.getElementById('provincia').value,
+                    email: document.getElementById('email').value,
+                    tagline: document.getElementById('tagline').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    aeropuerto: document.getElementById('aeropuerto').value,
+                    codigoIATA: document.getElementById('codigoIATA').value,
+                    distanciaAeropuerto: document.getElementById('distanciaAeropuerto').value,
+                    conexiones: document.getElementById('conexiones').value,
+                    hoteles5: document.getElementById('hoteles5').value,
+                    hoteles4: document.getElementById('hoteles4').value,
+                    hoteles3: document.getElementById('hoteles3').value,
+                    totalHabitaciones: document.getElementById('totalHabitaciones').value,
+                    venue1Nombre: document.getElementById('venue1Nombre').value,
+                    venue1Capacidad: document.getElementById('venue1Capacidad').value,
+                    venue2Nombre: document.getElementById('venue2Nombre').value,
+                    venue2Capacidad: document.getElementById('venue2Capacidad').value,
+                    venue3Nombre: document.getElementById('venue3Nombre').value,
+                    venue3Capacidad: document.getElementById('venue3Capacidad').value,
+                    fortalezas: obtenerFortalezas(),
+                    especial: document.getElementById('especial').value,
+                    exp1: document.getElementById('exp1').value,
+                    exp2: document.getElementById('exp2').value,
+                    exp3: document.getElementById('exp3').value,
+                    web: document.getElementById('web').value,
+                    telefono: document.getElementById('telefono').value,
+                    instagram: document.getElementById('instagram').value,
+                    linkedin: document.getElementById('linkedin').value,
+                    biddingLink: document.getElementById('biddingLink').value,
+                    extra: document.getElementById('extra').value,
+                    logoBase64: logoBase64,
+                    fotoBase64: fotoBase64,
+                    estadoBorrador: 'BORRADOR - INCOMPLETO'
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                alert('Borrador guardado exitosamente');
+                showLoading(false);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar');
+                showLoading(false);
+            }
+        }
+
+        // Inicialización
         updateProgress();
         updateButtons();
     </script>
