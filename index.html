@@ -939,7 +939,13 @@
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="tema8" value="Arte/Cultura" onchange="updatePreview()">
                                         <label for="tema8">Arte/Cultura</label>
-                                    </div>
+                                    </div><div class="checkbox-item">
+                                        <input type="checkbox" id="tema9" value="Otro" onchange="toggleOtroFortaleza(); updatePreview()">
+                                        <label for="tema9">Otro</label>
+                                    </div><div class="form-group" id="otroFortalezaGroup" style="display: none; margin-top: 15px;">
+                                    <label>Especificá cuál:</label>
+                                    <input type="text" id="otroFortaleza" placeholder="Ej: Minería, Construcción..." oninput="updatePreview()">
+                                </div>
                                 </div>
                             </div>
                         </div>
