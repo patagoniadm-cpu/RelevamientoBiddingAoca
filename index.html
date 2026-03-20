@@ -659,12 +659,7 @@
         <!-- WELCOME SCREEN -->
         <div id="welcomeScreen" class="welcome-screen">
             <div class="logo-aoca">
-                <svg viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
-                    <!-- AOCA Logo placeholder - reemplazar con el real -->
-                    <rect width="1200" height="400" fill="#3949AB"/>
-                    <text x="600" y="220" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle">AOCA</text>
-                    <text x="600" y="280" font-family="Arial, sans-serif" font-size="32" fill="white" text-anchor="middle" opacity="0.9">NUCLEAMOS LA INDUSTRIA DE REUNIONES</text>
-                </svg>
+                <img src="logo%20aoca.png" alt="AOCA" style="width: 100%; height: auto;">
             </div>
             
             <h1>Sistema de Relevamiento MICE</h1>
@@ -695,11 +690,7 @@
         <div id="mainForm" class="hidden">
             <div class="header">
                 <div class="logo-aoca">
-                    <svg viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="1200" height="400" fill="#3949AB"/>
-                        <text x="600" y="220" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle">AOCA</text>
-                        <text x="600" y="280" font-family="Arial, sans-serif" font-size="32" fill="white" text-anchor="middle" opacity="0.9">NUCLEAMOS LA INDUSTRIA DE REUNIONES</text>
-                    </svg>
+                    <img src="logo%20aoca.png" alt="AOCA" style="width: 100%; height: auto;">
                 </div>
                 <h1>Bidding Ecosistema AOCA</h1>
                 <p class="subtitle">Paso <span id="currentStep">1</span> de 10</p>
@@ -949,7 +940,14 @@
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="tema8" value="Arte/Cultura" onchange="updatePreview()">
                                         <label for="tema8">Arte/Cultura</label>
+                                    <<div class="checkbox-item">
+                                        <input type="checkbox" id="tema9" value="Otro" onchange="toggleOtroFortaleza(); updatePreview()">
+                                        <label for="tema9">Otro</label>
                                     </div>
+                                </div>
+                                <div class="form-group" id="otroFortalezaGroup" style="display: none; margin-top: 15px;">
+                                    <label>Especificá cuál:</label>
+                                    <input type="text" id="otroFortaleza" placeholder="Ej: Minería, Construcción..." oninput="updatePreview()">
                                 </div>
                             </div>
                         </div>
@@ -1016,10 +1014,10 @@
 
                     <div class="button-group">
                         <button type="button" class="btn btn-secondary" id="btnPrev" onclick="prevStep()" style="display: none;">← Anterior</button>
+                        <button type="button" class="btn btn-secondary" onclick="guardarBorrador()" style="background: #ffa726; color: white;">💾 Guardar Borrador</button>
                         <button type="button" class="btn btn-primary" id="btnNext" onclick="nextStep()">Siguiente →</button>
                         <button type="button" class="btn btn-primary" id="btnFinish" onclick="finishForm()" style="display: none;">¡Listo! Enviar mi ficha 🎉</button>
                     </div>
-                </div>
 
                 <!-- PREVIEW PANEL -->
                 <div class="preview-panel">
@@ -1159,8 +1157,120 @@
                 document.querySelector(`.form-section[data-step="${currentStep}"]`).classList.remove('active');
                 currentStep++;
                 document.querySelector(`.form-section[data-step="${currentStep}"]`).classList.add('active');
-                updateProgress();
-                updateButtons();
+                // ====================================
+        // FUNCIÓN TOGGLE OTRO FORTALEZA
+        // ====================================
+        function toggleOtroFortaleza() {
+            const checkbox = document.getElementById('tema9');
+            const group = document.getElementById('otroFortalezaGroup');
+            
+            if (checkbox.checked) {
+                group.style.display = 'block';
+            } else {
+                group.style.display = 'none';
+                document.getElementById('otroFortaleza').value = '';
+            }
+        }
+
+        // ====================================
+        // FUNCIÓN AUXILIAR: OBTENER FORTALEZAS
+        // ====================================
+        function obtenerFortalezas() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let fortalezas = [];
+            
+            checkboxes.forEach(cb => {
+                if (cb.id === 'tema9') {
+                    const otroTexto = document.getElementById('otroFortaleza').value;
+                    if (otroTexto) {
+                        fortalezas.push('Otro: ' + otroTexto);
+                    } else {
+                        fortalezas.push('Otro');
+                    }
+                } else {
+                    fortalezas.push(cb.value);
+                }
+            });
+            
+            return fortalezas.join(', ');
+        }
+
+        // ====================================
+        // GUARDAR BORRADOR
+        // ====================================
+        async function guardarBorrador() {
+            const destino = document.getElementById('nombreDestino').value;
+            
+            if (!destino) {
+                showAlert('Por favor ingresá al menos el nombre del destino antes de guardar', 'error');
+                return;
+            }
+            
+            if (!confirm('¿Guardar borrador de ' + destino + '?\n\nSe guardará como incompleto y podrás terminarlo después.')) {
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const formData = {
+                    timestamp: new Date().toISOString(),
+                    nombreDestino: document.getElementById('nombreDestino').value,
+                    provincia: document.getElementById('provincia').value,
+                    email: document.getElementById('email').value,
+                    tagline: document.getElementById('tagline').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    aeropuerto: document.getElementById('aeropuerto').value,
+                    codigoIATA: document.getElementById('codigoIATA').value,
+                    distanciaAeropuerto: document.getElementById('distanciaAeropuerto').value,
+                    conexiones: document.getElementById('conexiones').value,
+                    hoteles5: document.getElementById('hoteles5').value,
+                    hoteles4: document.getElementById('hoteles4').value,
+                    hoteles3: document.getElementById('hoteles3').value,
+                    totalHabitaciones: document.getElementById('totalHabitaciones').value,
+                    venue1Nombre: document.getElementById('venue1Nombre').value,
+                    venue1Capacidad: document.getElementById('venue1Capacidad').value,
+                    venue2Nombre: document.getElementById('venue2Nombre').value,
+                    venue2Capacidad: document.getElementById('venue2Capacidad').value,
+                    venue3Nombre: document.getElementById('venue3Nombre').value,
+                    venue3Capacidad: document.getElementById('venue3Capacidad').value,
+                    fortalezas: obtenerFortalezas(),
+                    especial: document.getElementById('especial').value,
+                    exp1: document.getElementById('exp1').value,
+                    exp2: document.getElementById('exp2').value,
+                    exp3: document.getElementById('exp3').value,
+                    web: document.getElementById('web').value,
+                    telefono: document.getElementById('telefono').value,
+                    instagram: document.getElementById('instagram').value,
+                    linkedin: document.getElementById('linkedin').value,
+                    biddingLink: document.getElementById('biddingLink').value,
+                    extra: document.getElementById('extra').value,
+                    logoBase64: logoBase64,
+                    fotoBase64: fotoBase64,
+                    estadoBorrador: 'BORRADOR - INCOMPLETO'
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                showAlert('Borrador de ' + destino + ' guardado exitosamente.\n\nPodés seguir editando y enviar cuando esté completo.', 'success');
+
+            } catch (error) {
+                console.error('Error guardando borrador:', error);
+                showAlert('Error al guardar. Intenta nuevamente.', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        updateProgress();
+        updateButtons();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
@@ -1264,7 +1374,16 @@
                 document.getElementById('sectionFortalezas').style.display = 'block';
                 let badgesHTML = '';
                 checkboxes.forEach(cb => {
-                    badgesHTML += `<div class="preview-badge">${cb.value}</div>`;
+                    if (cb.id === 'tema9') {
+                        const otroTexto = document.getElementById('otroFortaleza').value;
+                        if (otroTexto) {
+                            badgesHTML += `<div class="preview-badge">Otro: ${otroTexto}</div>`;
+                        } else {
+                            badgesHTML += `<div class="preview-badge">Otro</div>`;
+                        }
+                    } else {
+                        badgesHTML += `<div class="preview-badge">${cb.value}</div>`;
+                    }
                 });
                 document.getElementById('previewFortalezas').innerHTML = badgesHTML;
             }
@@ -1463,7 +1582,7 @@
                     venue2Capacidad: document.getElementById('venue2Capacidad').value,
                     venue3Nombre: document.getElementById('venue3Nombre').value,
                     venue3Capacidad: document.getElementById('venue3Capacidad').value,
-                    fortalezas: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value).join(', '),
+                    fortalezas: obtenerFortalezas(),
                     especial: document.getElementById('especial').value,
                     exp1: document.getElementById('exp1').value,
                     exp2: document.getElementById('exp2').value,
