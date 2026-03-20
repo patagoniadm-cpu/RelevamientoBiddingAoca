@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relevamiento MICE - Ecosistema AOCA</title>
+    
+    <!-- jsPDF para generación de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0d1357 0%, #1a237e 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px 20px;
+        }
+
+        .logo-aoca {
+            max-width: 350px;
+            margin: 0 auto 20px;
+            background: white;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .logo-aoca img {
+            width: 100%;
+            height: auto;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .preview-panel {
+                order: 2;
+            }
+        }
+
+        /* FORM PANEL */
+        .form-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7bc144 0%, #4caf50 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* FORM SECTIONS */
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #1a237e;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .section-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.05em;
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .form-group label .required {
+            color: #f57c00;
+            margin-left: 3px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="url"],
+        .form-group input[type="number"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* FILE UPLOAD */
+        .file-upload {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #1a237e;
+            background: #f5f5f5;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .file-preview {
+            margin-top: 15px;
+            max-width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .file-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* CHECKBOXES */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin-bottom: 0 !important;
+            cursor: pointer;
+        }
+
+        /* VENUE INPUTS */
+        .venue-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .venue-inputs {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+        }
+
+        /* BUTTONS */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1a237e 0%, #0d1357 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 35, 126, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* PREVIEW PANEL */
+        .preview-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .preview-title {
+            font-size: 1.5em;
+            color: #1a237e;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .preview-content {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            background: #fafafa;
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .preview-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            border-radius: 12px;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+            overflow: hidden;
+        }
+
+        .preview-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-destino {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1a237e;
+            margin-bottom: 5px;
+        }
+
+        .preview-tagline {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 250px;
+            border-radius: 8px;
+            background: #e0e0e0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        .preview-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-descripcion {
+            font-size: 1.05em;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 25px;
+            text-align: justify;
+        }
+
+        .preview-section {
+            margin-bottom: 25px;
+        }
+
+        .preview-section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #1a237e;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #7bc144;
+            display: inline-block;
+        }
+
+        .preview-data {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .preview-data strong {
+            color: #333;
+        }
+
+        .preview-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .preview-badge {
+            background: linear-gradient(135deg, #7bc144 0%, #4caf50 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .preview-contact {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .preview-contact-item {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .preview-contact-item a {
+            color: #1a237e;
+            text-decoration: none;
+        }
+
+        .preview-contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* WELCOME SCREEN */
+        .welcome-screen {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+        }
+
+        .welcome-screen h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .welcome-screen .subtitle {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .welcome-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .feature p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #7bc144 0%, #4caf50 100%);
+            color: white;
+            padding: 18px 50px;
+            font-size: 1.3em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(123, 193, 68, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 30px;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(123, 193, 68, 0.5);
+        }
+
+        /* FINAL SCREEN */
+        .final-screen {
+            display: none;
+        }
+
+        .final-screen.active {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .final-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #f57c00 0%, #ff6d00 100%);
+            color: white;
+        }
+
+        .btn-download:hover {
+            box-shadow: 0 6px 20px rgba(245, 124, 0, 0.4);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* LOADING */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a237e;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .alert-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .alert-error {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOADING OVERLAY -->
+    <div class="loading" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Procesando...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- WELCOME SCREEN -->
+        <div id="welcomeScreen" class="welcome-screen">
+            <div class="logo-aoca">
+                <svg viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- AOCA Logo placeholder - reemplazar con el real -->
+                    <rect width="1200" height="400" fill="#3949AB"/>
+                    <text x="600" y="220" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle">AOCA</text>
+                    <text x="600" y="280" font-family="Arial, sans-serif" font-size="32" fill="white" text-anchor="middle" opacity="0.9">NUCLEAMOS LA INDUSTRIA DE REUNIONES</text>
+                </svg>
+            </div>
+            
+            <h1>Sistema de Relevamiento MICE</h1>
+            <p class="subtitle">Creá la ficha profesional de tu destino para el Bidding Ecosistema AOCA</p>
+            
+            <div class="welcome-features">
+                <div class="feature">
+                    <div class="feature-icon">✨</div>
+                    <h3>Preview en Vivo</h3>
+                    <p>Ves cómo queda tu ficha mientras la completás</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📄</div>
+                    <h3>Descargá tu PDF</h3>
+                    <p>Al terminar, descargá tu ficha en alta calidad</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💾</div>
+                    <h3>Guardado Automático</h3>
+                    <p>Podés volver más tarde a completar</p>
+                </div>
+            </div>
+
+            <button class="btn-start" onclick="startForm()">Crear mi ficha ahora</button>
+        </div>
+
+        <!-- MAIN FORM -->
+        <div id="mainForm" class="hidden">
+            <div class="header">
+                <div class="logo-aoca">
+                    <svg viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="1200" height="400" fill="#3949AB"/>
+                        <text x="600" y="220" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle">AOCA</text>
+                        <text x="600" y="280" font-family="Arial, sans-serif" font-size="32" fill="white" text-anchor="middle" opacity="0.9">NUCLEAMOS LA INDUSTRIA DE REUNIONES</text>
+                    </svg>
+                </div>
+                <h1>Bidding Ecosistema AOCA</h1>
+                <p class="subtitle">Paso <span id="currentStep">1</span> de 10</p>
+            </div>
+
+            <div class="main-content">
+                <!-- FORM PANEL -->
+                <div class="form-panel">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">10% completado</div>
+                    </div>
+
+                    <form id="destinoForm" onsubmit="return false;">
+                        <!-- STEP 1: IDENTIFICACIÓN -->
+                        <div class="form-section active" data-step="1">
+                            <h2 class="section-title">Identificación</h2>
+                            <p class="section-subtitle">Datos básicos de tu destino</p>
+
+                            <div class="form-group">
+                                <label>Nombre del destino <span class="required">*</span></label>
+                                <input type="text" id="nombreDestino" required oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Provincia <span class="required">*</span></label>
+                                <select id="provincia" required onchange="updatePreview()">
+                                    <option value="">Seleccioná...</option>
+                                    <option>Buenos Aires</option>
+                                    <option>CABA</option>
+                                    <option>Catamarca</option>
+                                    <option>Chaco</option>
+                                    <option>Chubut</option>
+                                    <option>Córdoba</option>
+                                    <option>Corrientes</option>
+                                    <option>Entre Ríos</option>
+                                    <option>Formosa</option>
+                                    <option>Jujuy</option>
+                                    <option>La Pampa</option>
+                                    <option>La Rioja</option>
+                                    <option>Mendoza</option>
+                                    <option>Misiones</option>
+                                    <option>Neuquén</option>
+                                    <option>Río Negro</option>
+                                    <option>Salta</option>
+                                    <option>San Juan</option>
+                                    <option>San Luis</option>
+                                    <option>Santa Cruz</option>
+                                    <option>Santa Fe</option>
+                                    <option>Santiago del Estero</option>
+                                    <option>Tierra del Fuego</option>
+                                    <option>Tucumán</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email de contacto <span class="required">*</span></label>
+                                <input type="email" id="email" required oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tagline / Slogan del destino</label>
+                                <input type="text" id="tagline" placeholder="Ej: La Capital del Vino" oninput="updatePreview()">
+                            </div>
+                        </div>
+
+                        <!-- STEP 2: LOGO -->
+                        <div class="form-section" data-step="2">
+                            <h2 class="section-title">Logo de tu Buró/Destino</h2>
+                            <p class="section-subtitle">Subí el logo en alta calidad (PNG o JPG)</p>
+
+                            <div class="form-group">
+                                <div class="file-upload" onclick="document.getElementById('logoInput').click()">
+                                    <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(event)">
+                                    <div class="file-upload-icon">📤</div>
+                                    <div class="file-upload-text">Click para subir logo</div>
+                                </div>
+                                <div id="logoPreviewContainer" class="file-preview hidden"></div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 3: FOTO ICÓNICA -->
+                        <div class="form-section" data-step="3">
+                            <h2 class="section-title">La Foto Perfecta</h2>
+                            <p class="section-subtitle">La imagen más representativa de tu destino</p>
+
+                            <div class="form-group">
+                                <div class="file-upload" onclick="document.getElementById('fotoInput').click()">
+                                    <input type="file" id="fotoInput" accept="image/*" onchange="handleFotoUpload(event)">
+                                    <div class="file-upload-icon">📸</div>
+                                    <div class="file-upload-text">Click para subir la foto icónica</div>
+                                </div>
+                                <div id="fotoPreviewContainer" class="file-preview hidden"></div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 4: DESCRIPCIÓN -->
+                        <div class="form-section" data-step="4">
+                            <h2 class="section-title">Descripción del Destino</h2>
+                            <p class="section-subtitle">Contanos qué hace especial a tu destino</p>
+
+                            <div class="form-group">
+                                <label>Descripción breve (máx. 300 caracteres) <span class="required">*</span></label>
+                                <textarea id="descripcion" maxlength="300" required oninput="updatePreview(); updateCharCount('descripcion', 300)"></textarea>
+                                <div class="char-counter"><span id="descripcionCount">0</span>/300</div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 5: CONECTIVIDAD -->
+                        <div class="form-section" data-step="5">
+                            <h2 class="section-title">Conectividad</h2>
+                            <p class="section-subtitle">¿Cómo se llega a tu destino?</p>
+
+                            <div class="form-group">
+                                <label>Aeropuerto principal <span class="required">*</span></label>
+                                <input type="text" id="aeropuerto" required placeholder="Ej: Aeropuerto Internacional Ezeiza" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Código IATA</label>
+                                <input type="text" id="codigoIATA" placeholder="Ej: EZE" maxlength="3" style="text-transform: uppercase;" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Distancia al centro MICE (km)</label>
+                                <input type="number" id="distanciaAeropuerto" placeholder="0" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Principales conexiones directas</label>
+                                <textarea id="conexiones" placeholder="Ej: Buenos Aires, Córdoba, Santiago de Chile, Lima" oninput="updatePreview()"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- STEP 6: INFRAESTRUCTURA HOTELERA -->
+                        <div class="form-section" data-step="6">
+                            <h2 class="section-title">Infraestructura Hotelera</h2>
+                            <p class="section-subtitle">Capacidad de alojamiento</p>
+
+                            <div class="form-group">
+                                <label>Hoteles 5 estrellas (cantidad)</label>
+                                <input type="number" id="hoteles5" placeholder="0" min="0" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Hoteles 4 estrellas (cantidad)</label>
+                                <input type="number" id="hoteles4" placeholder="0" min="0" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Hoteles 3 estrellas (cantidad)</label>
+                                <input type="number" id="hoteles3" placeholder="0" min="0" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Total de habitaciones (aproximado)</label>
+                                <input type="number" id="totalHabitaciones" placeholder="0" min="0" oninput="updatePreview()">
+                            </div>
+                        </div>
+
+                        <!-- STEP 7: VENUES -->
+                        <div class="form-section" data-step="7">
+                            <h2 class="section-title">Principales Venues</h2>
+                            <p class="section-subtitle">Centros de convenciones y espacios para eventos</p>
+
+                            <div class="venue-group">
+                                <h4>Venue #1</h4>
+                                <div class="venue-inputs">
+                                    <div class="form-group">
+                                        <label>Nombre</label>
+                                        <input type="text" id="venue1Nombre" placeholder="Centro de Convenciones" oninput="updatePreview()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Capacidad (pax)</label>
+                                        <input type="number" id="venue1Capacidad" placeholder="0" min="0" oninput="updatePreview()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="venue-group">
+                                <h4>Venue #2</h4>
+                                <div class="venue-inputs">
+                                    <div class="form-group">
+                                        <label>Nombre</label>
+                                        <input type="text" id="venue2Nombre" placeholder="Hotel Convention Center" oninput="updatePreview()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Capacidad (pax)</label>
+                                        <input type="number" id="venue2Capacidad" placeholder="0" min="0" oninput="updatePreview()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="venue-group">
+                                <h4>Venue #3</h4>
+                                <div class="venue-inputs">
+                                    <div class="form-group">
+                                        <label>Nombre</label>
+                                        <input type="text" id="venue3Nombre" placeholder="Predio Ferial" oninput="updatePreview()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Capacidad (pax)</label>
+                                        <input type="number" id="venue3Capacidad" placeholder="0" min="0" oninput="updatePreview()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 8: FORTALEZAS MICE -->
+                        <div class="form-section" data-step="8">
+                            <h2 class="section-title">Fortalezas MICE</h2>
+                            <p class="section-subtitle">¿En qué sectores se especializa tu destino?</p>
+
+                            <div class="form-group">
+                                <label>Especializaciones temáticas (marcá todas las que apliquen)</label>
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="tema1" value="Medicina/Salud" onchange="updatePreview()">
+                                        <label for="tema1">Medicina/Salud</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="tema2" value="Derecho" onchange="updatePreview()">
+                                        <label for="tema2">Derecho</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="tema3" value="Educación" onchange="updatePreview()">
+                                        <label for="tema3">Educación</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="tema4" value="Agronegocios" onchange="updatePreview()">
+                                        <label for="tema4">Agronegocios</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="tema5" value="Tecnología" onchange="updatePreview()">
+                                        <label for="tema5">Tecnología</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="tema6" value="Energía" onchange="updatePreview()">
+                                        <label for="tema6">Energía</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="tema7" value="Turismo" onchange="updatePreview()">
+                                        <label for="tema7">Turismo</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="tema8" value="Arte/Cultura" onchange="updatePreview()">
+                                        <label for="tema8">Arte/Cultura</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 9: EXPERIENCIAS ÚNICAS -->
+                        <div class="form-section" data-step="9">
+                            <h2 class="section-title">Lo Que Te Hace Único</h2>
+                            <p class="section-subtitle">Experiencias que solo se pueden vivir en tu destino</p>
+
+                            <div class="form-group">
+                                <label>¿Qué hace especial a tu destino? (máx. 300 caracteres)</label>
+                                <textarea id="especial" maxlength="300" placeholder="Ej: Única ciudad argentina con..." oninput="updatePreview(); updateCharCount('especial', 300)"></textarea>
+                                <div class="char-counter"><span id="especialCount">0</span>/300</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Top 3 experiencias únicas</label>
+                                <input type="text" id="exp1" placeholder="Experiencia 1" oninput="updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="exp2" placeholder="Experiencia 2" oninput="updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="exp3" placeholder="Experiencia 3" oninput="updatePreview()">
+                            </div>
+                        </div>
+
+                        <!-- STEP 10: CONTACTO Y MATERIALES -->
+                        <div class="form-section" data-step="10">
+                            <h2 class="section-title">Contacto y Materiales</h2>
+                            <p class="section-subtitle">Información final de contacto</p>
+
+                            <div class="form-group">
+                                <label>Web del Buró/Destino <span class="required">*</span></label>
+                                <input type="url" id="web" required placeholder="https://" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Teléfono/WhatsApp</label>
+                                <input type="text" id="telefono" placeholder="+54 9 ..." oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Instagram (usuario)</label>
+                                <input type="text" id="instagram" placeholder="@tudestino" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>LinkedIn (URL)</label>
+                                <input type="url" id="linkedin" placeholder="https://linkedin.com/..." oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Link a tu Bidding Individual (si ya tenés)</label>
+                                <input type="url" id="biddingLink" placeholder="https://" oninput="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label>¿Algo más que quieras destacar?</label>
+                                <textarea id="extra" placeholder="Campo libre para cualquier información adicional..." oninput="updatePreview()"></textarea>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" id="btnPrev" onclick="prevStep()" style="display: none;">← Anterior</button>
+                        <button type="button" class="btn btn-primary" id="btnNext" onclick="nextStep()">Siguiente →</button>
+                        <button type="button" class="btn btn-primary" id="btnFinish" onclick="finishForm()" style="display: none;">¡Listo! Enviar mi ficha 🎉</button>
+                    </div>
+                </div>
+
+                <!-- PREVIEW PANEL -->
+                <div class="preview-panel">
+                    <h3 class="preview-title">Vista Previa de tu Ficha</h3>
+                    <div class="preview-content" id="previewContent">
+                        <div class="preview-header">
+                            <div class="preview-logo" id="previewLogo">Logo</div>
+                            <div class="preview-destino" id="previewDestino">Tu Destino</div>
+                            <div class="preview-tagline" id="previewTagline"></div>
+                        </div>
+
+                        <div class="preview-image" id="previewImagen">Foto Icónica</div>
+
+                        <div class="preview-descripcion" id="previewDescripcion">
+                            La descripción de tu destino aparecerá aquí...
+                        </div>
+
+                        <div class="preview-section" id="sectionConectividad" style="display: none;">
+                            <div class="preview-section-title">📍 Conectividad</div>
+                            <div class="preview-data" id="previewConectividad"></div>
+                        </div>
+
+                        <div class="preview-section" id="sectionHoteles" style="display: none;">
+                            <div class="preview-section-title">🏨 Infraestructura Hotelera</div>
+                            <div class="preview-data" id="previewHoteles"></div>
+                        </div>
+
+                        <div class="preview-section" id="sectionVenues" style="display: none;">
+                            <div class="preview-section-title">🏛 Principales Venues</div>
+                            <div class="preview-data" id="previewVenues"></div>
+                        </div>
+
+                        <div class="preview-section" id="sectionFortalezas" style="display: none;">
+                            <div class="preview-section-title">⭐ Fortalezas MICE</div>
+                            <div class="preview-badges" id="previewFortalezas"></div>
+                        </div>
+
+                        <div class="preview-section" id="sectionExperiencias" style="display: none;">
+                            <div class="preview-section-title">✨ Experiencias Únicas</div>
+                            <div class="preview-data" id="previewExperiencias"></div>
+                        </div>
+
+                        <div class="preview-contact">
+                            <strong>📞 Contacto:</strong>
+                            <div class="preview-contact-item" id="previewContacto">
+                                Completá tus datos de contacto...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINAL SCREEN -->
+        <div id="finalScreen" class="final-screen">
+            <div class="form-panel" style="max-width: 900px; margin: 50px auto;">
+                <div class="success-icon">🎉</div>
+                <h2 class="section-title" style="text-align: center;">¡Felicitaciones!</h2>
+                <p class="section-subtitle" style="font-size: 1.2em; margin-bottom: 30px; text-align: center;">
+                    La ficha de <strong id="finalDestino"></strong> está lista
+                </p>
+
+                <div class="preview-content" id="finalPreviewContent">
+                    <!-- Se copia el preview aquí -->
+                </div>
+
+                <div class="final-buttons">
+                    <button class="btn btn-download" onclick="downloadPDF()">📥 Descargar PDF</button>
+                    <button class="btn btn-secondary" onclick="editForm()">✏️ Editar</button>
+                    <button class="btn btn-primary" onclick="confirmSubmit()">✅ Confirmar y Enviar</button>
+                </div>
+
+                <div style="margin-top: 40px; padding: 20px; background: #f0f0f0; border-radius: 8px;">
+                    <h4 style="margin-bottom: 15px; text-align: center;">Próximos pasos:</h4>
+                    <div style="text-align: left; max-width: 500px; margin: 0 auto; line-height: 1.8;">
+                        ✅ Tu ficha será incluida en el Bidding Ecosistema AOCA<br>
+                        ✅ Recibirás confirmación por email<br>
+                        ✅ Podés descargar tu PDF cuando quieras<br>
+                        ✅ Te contactaremos si necesitamos algún detalle<br><br>
+                        <strong>¿Dudas?</strong> direccioninstitucional@aoca.org.ar
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ====================================
+        // CONFIGURACIÓN - REEMPLAZAR CON TU WEB APP URL
+        // ====================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwU3pxDQJa0a0mrXeIvFL6GtSsPfMJZJYUBHN0BbpD0TKA7pYIGUg_mnI6e25NLsKv3/exec'; // Lo obtenés después de deployar el script
+        
+        // ====================================
+        // VARIABLES GLOBALES
+        // ====================================
+        let currentStep = 1;
+        const totalSteps = 10;
+        let logoBase64 = '';
+        let fotoBase64 = '';
+
+        // ====================================
+        // NAVEGACIÓN
+        // ====================================
+        function startForm() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('mainForm').classList.remove('hidden');
+            updatePreview();
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '% completado';
+            document.getElementById('currentStep').textContent = currentStep;
+        }
+
+        function nextStep() {
+            const currentSection = document.querySelector(`.form-section[data-step="${currentStep}"]`);
+            const requiredInputs = currentSection.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.style.borderColor = '#f44336';
+                } else {
+                    input.style.borderColor = '#e0e0e0';
+                }
+            });
+
+            if (!isValid) {
+                showAlert('Por favor completá todos los campos obligatorios (*)', 'error');
+                return;
+            }
+
+            if (currentStep < totalSteps) {
+                document.querySelector(`.form-section[data-step="${currentStep}"]`).classList.remove('active');
+                currentStep++;
+                document.querySelector(`.form-section[data-step="${currentStep}"]`).classList.add('active');
+                updateProgress();
+                updateButtons();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.querySelector(`.form-section[data-step="${currentStep}"]`).classList.remove('active');
+                currentStep--;
+                document.querySelector(`.form-section[data-step="${currentStep}"]`).classList.add('active');
+                updateProgress();
+                updateButtons();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function updateButtons() {
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            const btnFinish = document.getElementById('btnFinish');
+
+            btnPrev.style.display = currentStep === 1 ? 'none' : 'block';
+            
+            if (currentStep === totalSteps) {
+                btnNext.style.display = 'none';
+                btnFinish.style.display = 'block';
+            } else {
+                btnNext.style.display = 'block';
+                btnFinish.style.display = 'none';
+            }
+        }
+
+        // ====================================
+        // PREVIEW EN VIVO
+        // ====================================
+        function updatePreview() {
+            const destino = document.getElementById('nombreDestino').value || 'Tu Destino';
+            const tagline = document.getElementById('tagline').value;
+            const descripcion = document.getElementById('descripcion').value;
+            
+            document.getElementById('previewDestino').textContent = destino;
+            document.getElementById('previewTagline').textContent = tagline;
+            document.getElementById('previewDescripcion').textContent = descripcion || 'La descripción de tu destino aparecerá aquí...';
+
+            // Conectividad
+            const aeropuerto = document.getElementById('aeropuerto').value;
+            const iata = document.getElementById('codigoIATA').value;
+            const distancia = document.getElementById('distanciaAeropuerto').value;
+            const conexiones = document.getElementById('conexiones').value;
+            
+            if (aeropuerto || conexiones) {
+                document.getElementById('sectionConectividad').style.display = 'block';
+                let conectividadHTML = '';
+                if (aeropuerto) {
+                    conectividadHTML += `<strong>Aeropuerto:</strong> ${aeropuerto}`;
+                    if (iata) conectividadHTML += ` (${iata})`;
+                    if (distancia) conectividadHTML += ` - ${distancia} km del centro`;
+                    conectividadHTML += '<br>';
+                }
+                if (conexiones) {
+                    conectividadHTML += `<strong>Conexiones directas:</strong> ${conexiones}`;
+                }
+                document.getElementById('previewConectividad').innerHTML = conectividadHTML;
+            }
+
+            // Hoteles
+            const h5 = document.getElementById('hoteles5').value;
+            const h4 = document.getElementById('hoteles4').value;
+            const h3 = document.getElementById('hoteles3').value;
+            const total = document.getElementById('totalHabitaciones').value;
+            
+            if (h5 || h4 || h3 || total) {
+                document.getElementById('sectionHoteles').style.display = 'block';
+                let hotelesHTML = '';
+                if (h5) hotelesHTML += `⭐⭐⭐⭐⭐ ${h5} hoteles<br>`;
+                if (h4) hotelesHTML += `⭐⭐⭐⭐ ${h4} hoteles<br>`;
+                if (h3) hotelesHTML += `⭐⭐⭐ ${h3} hoteles<br>`;
+                if (total) hotelesHTML += `<strong>Total:</strong> ${total} habitaciones`;
+                document.getElementById('previewHoteles').innerHTML = hotelesHTML;
+            }
+
+            // Venues
+            const v1n = document.getElementById('venue1Nombre').value;
+            const v1c = document.getElementById('venue1Capacidad').value;
+            const v2n = document.getElementById('venue2Nombre').value;
+            const v2c = document.getElementById('venue2Capacidad').value;
+            const v3n = document.getElementById('venue3Nombre').value;
+            const v3c = document.getElementById('venue3Capacidad').value;
+            
+            if (v1n || v2n || v3n) {
+                document.getElementById('sectionVenues').style.display = 'block';
+                let venuesHTML = '';
+                if (v1n) venuesHTML += `• <strong>${v1n}</strong>${v1c ? ` (${v1c} pax)` : ''}<br>`;
+                if (v2n) venuesHTML += `• <strong>${v2n}</strong>${v2c ? ` (${v2c} pax)` : ''}<br>`;
+                if (v3n) venuesHTML += `• <strong>${v3n}</strong>${v3c ? ` (${v3c} pax)` : ''}`;
+                document.getElementById('previewVenues').innerHTML = venuesHTML;
+            }
+
+            // Fortalezas
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            if (checkboxes.length > 0) {
+                document.getElementById('sectionFortalezas').style.display = 'block';
+                let badgesHTML = '';
+                checkboxes.forEach(cb => {
+                    badgesHTML += `<div class="preview-badge">${cb.value}</div>`;
+                });
+                document.getElementById('previewFortalezas').innerHTML = badgesHTML;
+            }
+
+            // Experiencias
+            const especial = document.getElementById('especial').value;
+            const exp1 = document.getElementById('exp1').value;
+            const exp2 = document.getElementById('exp2').value;
+            const exp3 = document.getElementById('exp3').value;
+            
+            if (especial || exp1 || exp2 || exp3) {
+                document.getElementById('sectionExperiencias').style.display = 'block';
+                let expHTML = '';
+                if (especial) expHTML += `<p>${especial}</p>`;
+                if (exp1) expHTML += `• ${exp1}<br>`;
+                if (exp2) expHTML += `• ${exp2}<br>`;
+                if (exp3) expHTML += `• ${exp3}`;
+                document.getElementById('previewExperiencias').innerHTML = expHTML;
+            }
+
+            // Contacto
+            const email = document.getElementById('email').value;
+            const web = document.getElementById('web').value;
+            const telefono = document.getElementById('telefono').value;
+            const instagram = document.getElementById('instagram').value;
+            const linkedin = document.getElementById('linkedin').value;
+            
+            let contactoHTML = '';
+            if (email) contactoHTML += `📧 <a href="mailto:${email}">${email}</a><br>`;
+            if (web) contactoHTML += `🌐 <a href="${web}" target="_blank">${web}</a><br>`;
+            if (telefono) contactoHTML += `📱 ${telefono}<br>`;
+            if (instagram) contactoHTML += `📷 ${instagram}<br>`;
+            if (linkedin) contactoHTML += `💼 LinkedIn`;
+            
+            document.getElementById('previewContacto').innerHTML = contactoHTML || 'Completá tus datos de contacto...';
+        }
+
+        function updateCharCount(fieldId, max) {
+            const field = document.getElementById(fieldId);
+            const counter = document.getElementById(fieldId + 'Count');
+            counter.textContent = field.value.length;
+        }
+
+        // ====================================
+        // MANEJO DE IMÁGENES
+        // ====================================
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logoBase64 = e.target.result;
+                    const container = document.getElementById('logoPreviewContainer');
+                    container.innerHTML = `<img src="${e.target.result}" alt="Logo preview">`;
+                    container.classList.remove('hidden');
+                    
+                    const previewLogo = document.getElementById('previewLogo');
+                    previewLogo.innerHTML = `<img src="${e.target.result}" alt="Logo">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleFotoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fotoBase64 = e.target.result;
+                    const container = document.getElementById('fotoPreviewContainer');
+                    container.innerHTML = `<img src="${e.target.result}" alt="Foto preview">`;
+                    container.classList.remove('hidden');
+                    
+                    const previewImagen = document.getElementById('previewImagen');
+                    previewImagen.innerHTML = `<img src="${e.target.result}" alt="Foto destino">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ====================================
+        // FINALIZACIÓN Y ENVÍO
+        // ====================================
+        function finishForm() {
+            const currentSection = document.querySelector(`.form-section[data-step="${currentStep}"]`);
+            const requiredInputs = currentSection.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.style.borderColor = '#f44336';
+                } else {
+                    input.style.borderColor = '#e0e0e0';
+                }
+            });
+
+            if (!isValid) {
+                showAlert('Por favor completá todos los campos obligatorios (*)', 'error');
+                return;
+            }
+
+            // Mostrar pantalla final
+            document.getElementById('mainForm').classList.add('hidden');
+            document.getElementById('finalScreen').classList.add('active');
+            
+            const destino = document.getElementById('nombreDestino').value;
+            document.getElementById('finalDestino').textContent = destino;
+            
+            // Copiar preview
+            const previewContent = document.getElementById('previewContent').cloneNode(true);
+            document.getElementById('finalPreviewContent').innerHTML = previewContent.innerHTML;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function editForm() {
+            document.getElementById('finalScreen').classList.remove('active');
+            document.getElementById('mainForm').classList.remove('hidden');
+        }
+
+        // ====================================
+        // GENERACIÓN DE PDF
+        // ====================================
+        async function downloadPDF() {
+            showLoading(true);
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                const element = document.getElementById('finalPreviewContent');
+                
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 190;
+                const pageHeight = 277;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 10;
+
+                doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                const destino = document.getElementById('nombreDestino').value;
+                const filename = `Ficha_MICE_${destino.replace(/\s+/g, '_')}.pdf`;
+                doc.save(filename);
+                
+                showAlert('PDF descargado exitosamente', 'success');
+            } catch (error) {
+                console.error('Error generando PDF:', error);
+                showAlert('Error al generar el PDF. Intenta nuevamente.', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ====================================
+        // ENVÍO A GOOGLE SHEETS
+        // ====================================
+        async function confirmSubmit() {
+            showLoading(true);
+            
+            try {
+                // Recolectar todos los datos
+                const formData = {
+                    timestamp: new Date().toISOString(),
+                    nombreDestino: document.getElementById('nombreDestino').value,
+                    provincia: document.getElementById('provincia').value,
+                    email: document.getElementById('email').value,
+                    tagline: document.getElementById('tagline').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    aeropuerto: document.getElementById('aeropuerto').value,
+                    codigoIATA: document.getElementById('codigoIATA').value,
+                    distanciaAeropuerto: document.getElementById('distanciaAeropuerto').value,
+                    conexiones: document.getElementById('conexiones').value,
+                    hoteles5: document.getElementById('hoteles5').value,
+                    hoteles4: document.getElementById('hoteles4').value,
+                    hoteles3: document.getElementById('hoteles3').value,
+                    totalHabitaciones: document.getElementById('totalHabitaciones').value,
+                    venue1Nombre: document.getElementById('venue1Nombre').value,
+                    venue1Capacidad: document.getElementById('venue1Capacidad').value,
+                    venue2Nombre: document.getElementById('venue2Nombre').value,
+                    venue2Capacidad: document.getElementById('venue2Capacidad').value,
+                    venue3Nombre: document.getElementById('venue3Nombre').value,
+                    venue3Capacidad: document.getElementById('venue3Capacidad').value,
+                    fortalezas: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value).join(', '),
+                    especial: document.getElementById('especial').value,
+                    exp1: document.getElementById('exp1').value,
+                    exp2: document.getElementById('exp2').value,
+                    exp3: document.getElementById('exp3').value,
+                    web: document.getElementById('web').value,
+                    telefono: document.getElementById('telefono').value,
+                    instagram: document.getElementById('instagram').value,
+                    linkedin: document.getElementById('linkedin').value,
+                    biddingLink: document.getElementById('biddingLink').value,
+                    extra: document.getElementById('extra').value,
+                    logoBase64: logoBase64,
+                    fotoBase64: fotoBase64
+                };
+
+                // Enviar a Google Sheets
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                showAlert(`¡Ficha de ${formData.nombreDestino} enviada exitosamente!\n\nRecibirás confirmación en ${formData.email}`, 'success');
+                
+                // Esperar 3 segundos y reload
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error enviando formulario:', error);
+                showAlert('Error al enviar. Por favor intenta nuevamente o contacta a direccioninstitucional@aoca.org.ar', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ====================================
+        // UTILIDADES
+        // ====================================
+        function showLoading(show) {
+            const loading = document.getElementById('loadingOverlay');
+            if (show) {
+                loading.classList.add('active');
+            } else {
+                loading.classList.remove('active');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // ====================================
+        // INICIALIZACIÓN
+        // ====================================
+        updateProgress();
+        updateButtons();
+    </script>
+</body>
+</html>
