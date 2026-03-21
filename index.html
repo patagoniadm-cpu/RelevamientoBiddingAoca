@@ -1012,6 +1012,7 @@
 
                     <div class="button-group">
                         <button type="button" class="btn btn-secondary" id="btnPrev" onclick="prevStep()" style="display: none;">← Anterior</button>
+                        <button type="button" class="btn btn-secondary" onclick="guardarBorrador()" style="background: #ffa726; color: white;">💾 Guardar Borrador</button>
                         <button type="button" class="btn btn-primary" id="btnNext" onclick="nextStep()">Siguiente →</button>
                         <button type="button" class="btn btn-primary" id="btnFinish" onclick="finishForm()" style="display: none;">¡Listo! Enviar mi ficha 🎉</button>
                     </div>
@@ -1559,6 +1560,76 @@
             });
             
             return fortalezas.join(', ');
+        }// GUARDAR BORRADOR
+        async function guardarBorrador() {
+            const destino = document.getElementById('nombreDestino').value;
+            
+            if (!destino) {
+                alert('Por favor ingresá al menos el nombre del destino antes de guardar');
+                return;
+            }
+            
+            if (!confirm('¿Guardar borrador de ' + destino + '?\n\nSe guardará como incompleto y podrás terminarlo después.')) {
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const formData = {
+                    timestamp: new Date().toISOString(),
+                    nombreDestino: document.getElementById('nombreDestino').value,
+                    provincia: document.getElementById('provincia').value,
+                    email: document.getElementById('email').value,
+                    tagline: document.getElementById('tagline').value,
+                    descripcion: document.getElementById('descripcion').value,
+                    aeropuerto: document.getElementById('aeropuerto').value,
+                    codigoIATA: document.getElementById('codigoIATA').value,
+                    distanciaAeropuerto: document.getElementById('distanciaAeropuerto').value,
+                    conexiones: document.getElementById('conexiones').value,
+                    hoteles5: document.getElementById('hoteles5').value,
+                    hoteles4: document.getElementById('hoteles4').value,
+                    hoteles3: document.getElementById('hoteles3').value,
+                    totalHabitaciones: document.getElementById('totalHabitaciones').value,
+                    venue1Nombre: document.getElementById('venue1Nombre').value,
+                    venue1Capacidad: document.getElementById('venue1Capacidad').value,
+                    venue2Nombre: document.getElementById('venue2Nombre').value,
+                    venue2Capacidad: document.getElementById('venue2Capacidad').value,
+                    venue3Nombre: document.getElementById('venue3Nombre').value,
+                    venue3Capacidad: document.getElementById('venue3Capacidad').value,
+                    fortalezas: obtenerFortalezas(),
+                    especial: document.getElementById('especial').value,
+                    exp1: document.getElementById('exp1').value,
+                    exp2: document.getElementById('exp2').value,
+                    exp3: document.getElementById('exp3').value,
+                    web: document.getElementById('web').value,
+                    telefono: document.getElementById('telefono').value,
+                    instagram: document.getElementById('instagram').value,
+                    linkedin: document.getElementById('linkedin').value,
+                    biddingLink: document.getElementById('biddingLink').value,
+                    extra: document.getElementById('extra').value,
+                    logoBase64: logoBase64,
+                    fotoBase64: fotoBase64,
+                    estadoBorrador: 'BORRADOR - INCOMPLETO'
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                alert('Borrador de ' + destino + ' guardado exitosamente.\n\nPodés seguir editando y enviar cuando esté completo.');
+                showLoading(false);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar. Intenta nuevamente.');
+                showLoading(false);
+            }
         }
         
         updateProgress();
