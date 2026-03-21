@@ -1525,6 +1525,42 @@
         // ====================================
         // INICIALIZACIÓN
         // ====================================
+        // FUNCIÓN TOGGLE OTRO FORTALEZA
+        function toggleOtroFortaleza() {
+            const checkbox = document.getElementById('tema9');
+            const group = document.getElementById('otroFortalezaGroup');
+            
+            if (checkbox && group) {
+                if (checkbox.checked) {
+                    group.style.display = 'block';
+                } else {
+                    group.style.display = 'none';
+                    document.getElementById('otroFortaleza').value = '';
+                }
+            }
+        }
+
+        // FUNCIÓN OBTENER FORTALEZAS
+        function obtenerFortalezas() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let fortalezas = [];
+            
+            checkboxes.forEach(cb => {
+                if (cb.id === 'tema9') {
+                    const otroTexto = document.getElementById('otroFortaleza').value;
+                    if (otroTexto) {
+                        fortalezas.push('Otro: ' + otroTexto);
+                    } else {
+                        fortalezas.push('Otro');
+                    }
+                } else {
+                    fortalezas.push(cb.value);
+                }
+            });
+            
+            return fortalezas.join(', ');
+        }
+        
         updateProgress();
         updateButtons();
     </script>
