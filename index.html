@@ -767,7 +767,10 @@
                                 <div class="file-upload" onclick="document.getElementById('logoInput').click()">
                                     <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(event)">
                                     <div class="file-upload-icon">📤</div>
-                                    <div class="file-upload-text">Click para subir logo</div>
+                                    <div class="file-upload-text">
+                                        <strong>Click para subir logo</strong><br>
+                                        <small style="color: #999;">PNG con fondo transparente | Mín: 500x500 px | Máx: 2 MB</small>
+                                    </div>
                                 </div>
                                 <div id="logoPreviewContainer" class="file-preview hidden"></div>
                             </div>
@@ -782,7 +785,10 @@
                                 <div class="file-upload" onclick="document.getElementById('fotoInput').click()">
                                     <input type="file" id="fotoInput" accept="image/*" onchange="handleFotoUpload(event)">
                                     <div class="file-upload-icon">📸</div>
-                                    <div class="file-upload-text">Click para subir la foto icónica</div>
+                                    <div class="file-upload-text">
+                                        <strong>Click para subir la foto icónica</strong><br>
+                                        <small style="color: #999;">JPG horizontal | Mín: 1920x1080 px | Máx: 5 MB</small>
+                                    </div>
                                 </div>
                                 <div id="fotoPreviewContainer" class="file-preview hidden"></div>
                             </div>
